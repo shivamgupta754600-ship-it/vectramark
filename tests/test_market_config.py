@@ -16,6 +16,8 @@ def test_supported_markets(symbol):
 
     assert market.symbol == symbol
     assert market.name
+    assert "futures" in market.name.lower()
+    assert "futures" in market.description.lower()
 
 
 def test_market_lookup_is_case_insensitive():
@@ -29,3 +31,19 @@ def test_unsupported_market_raises_error():
 
 def test_list_markets_returns_all_markets():
     assert len(list_markets()) == 5
+
+
+@pytest.mark.parametrize(
+    ("symbol", "provider_ticker"),
+    [
+        ("XAUUSD", "GC=F"),
+        ("XAGUSD", "SI=F"),
+        ("NASDAQ100", "NQ=F"),
+        ("SP500", "ES=F"),
+        ("DJIA", "YM=F"),
+    ],
+)
+def test_market_description_identifies_futures_ticker(symbol, provider_ticker):
+    market = get_market(symbol)
+
+    assert provider_ticker in market.description

@@ -1,50 +1,60 @@
-
 # VectraMark
 
 **AI-Powered Market Intelligence and Analytics Platform**
 
 **GitHub Repository:** [View VectraMark source code](https://github.com/shivamgupta754600-ship-it/vectramark)
 
-VectraMark is a market intelligence project designed to analyze financial market data, identify technical trends, explore relevant news, and provide structured research insights.
+VectraMark is a market intelligence project designed to analyze futures-market data, identify technical trends, explore relevant news, and provide structured research insights.
 
-The project focuses on building a modular, maintainable, and safety-aware foundation for market analysis.
+The project focuses on building a modular, maintainable, and safety-aware foundation for market analysis, with explicit instrument identification, data validation, and transparent handling of uncertainty.
 
 > **Disclaimer:** VectraMark is an educational and analytical software project. Its outputs are not financial advice, investment recommendations, or guarantees of future market performance.
 
 ## Supported Markets
 
-- **Gold:** XAU/USD (XAUUSD)
-- **Silver:** XAG/USD (XAGUSD)
-- **Nasdaq-100**
-- **S&P 500**
-- **Dow Jones Industrial Average**
+VectraMark is configured for the following futures-market instruments:
 
-Actual data availability depends on the configured market-data source.
+| Market | Internal ID | Yahoo Finance Ticker | Instrument Type |
+|---|---|---|---|
+| Gold Futures | `XAUUSD` | `GC=F` | Futures |
+| Silver Futures | `XAGUSD` | `SI=F` | Futures |
+| Nasdaq-100 Futures | `NASDAQ100` | `NQ=F` | Futures |
+| S&P 500 Futures | `SP500` | `ES=F` | Futures |
+| Dow Futures | `DJIA` | `YM=F` | Futures |
+
+**Important instrument distinction:** The internal IDs are retained for API compatibility. They do not mean the application is using spot prices or cash-index values. The configured provider tickers identify futures instruments, and actual data availability and returned data must still be verified.
+
+Futures prices can differ from the corresponding spot prices or cash-index values. Continuous futures series may also be affected by contract-roll methodology. Existing CSV files must not be assumed to contain futures data merely because their filenames use these internal IDs.
 
 ## Current Features
 
 ### 1. Technical Market Analysis
+
 - Technical bias classification.
 - Indicator-based analysis using market candles.
 - Support and resistance level identification.
 - Analysis across configurable periods and intervals.
 
 ### 2. News Context Analysis
+
 - News context associated with market research.
 - Rule-based headline classification and confidence assessment.
 - Visibility into uncertain or unclassified headlines.
 
 ### 3. Market Safety Guardrails
+
 - Flags for uncertain news classifications.
 - Review-required states when the available evidence is insufficient.
 - Structured responses intended to make limitations visible.
 
 ### 4. Market Data Quality Checks
+
 - Checks for market-data quality and completeness.
 - Validation of important candle-data properties.
 - Data-quality status included in the research output.
 
 ### 5. Unified Research Snapshot API
+
 - Combines technical bias, support and resistance, news context, news safety, and data-quality results.
 - Uses FastAPI to expose structured API responses.
 - Provides a foundation for future market research features.
@@ -62,7 +72,7 @@ Actual data availability depends on the configured market-data source.
 - **Code Quality:** Ruff
 - **Planned Frontend:** React, TypeScript, and Vite
 
-Technology listed for planned features does not necessarily mean that the corresponding feature is fully integrated yet.
+Technology listed for planned features does not necessarily mean that the corresponding feature is fully integrated or operational.
 
 ## Project Architecture
 
@@ -86,7 +96,7 @@ This separation helps keep API handling, business workflows, analytical rules, a
 ### 1. Clone the Repository
 
 ```bash
-git clone <https://github.com/shivamgupta754600-ship-it/vectramark.git>
+git clone https://github.com/shivamgupta754600-ship-it/vectramark.git
 cd vectramark
 ```
 
@@ -128,6 +138,7 @@ uv run ruff format --check .
 - Do not commit `.env` files or credentials to Git.
 - Use `.env.example` to document required environment-variable names without real secret values, when needed.
 - Validate external data before using it in analytical workflows.
+- Verify that the actual market-data source matches the intended instrument type.
 - Treat uncertain analysis and news classifications cautiously.
 - Do not interpret an analytical score or market bias as a guaranteed prediction.
 
@@ -141,6 +152,7 @@ Planned areas for future development include:
 - A strategy-building workflow with measurable performance metrics.
 - A React and TypeScript user interface.
 - Further testing, monitoring, and reliability improvements.
+- Verification of futures-series data, historical CSV provenance, and contract-roll behavior.
 
 Features in this roadmap are planned and should not be considered complete until implemented and validated.
 
@@ -148,4 +160,4 @@ Features in this roadmap are planned and should not be considered complete until
 
 **Status:** Active development.
 
-VectraMark is being developed incrementally, with an emphasis on modular design, testing, validation, and explicit handling of uncertain results.
+VectraMark is being developed incrementally, with an emphasis on modular design, testing, validation, explicit identification of futures instruments, and careful handling of uncertain results.

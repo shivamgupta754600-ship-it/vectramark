@@ -5,7 +5,7 @@ from vectramark.core.exceptions import MarketDataError
 
 @dataclass(frozen=True, slots=True)
 class ProviderInstrument:
-    """Describe a market and its provider-specific instrument."""
+    """Describe a futures-market instrument at its data provider."""
 
     internal_symbol: str
     provider_symbol: str
@@ -18,37 +18,37 @@ _PROVIDER_INSTRUMENTS: dict[str, ProviderInstrument] = {
         internal_symbol="XAUUSD",
         provider_symbol="GC=F",
         instrument_type="futures",
-        description="Gold futures quoted in US dollars.",
+        description="Gold futures; Yahoo Finance ticker GC=F.",
     ),
     "XAGUSD": ProviderInstrument(
         internal_symbol="XAGUSD",
         provider_symbol="SI=F",
         instrument_type="futures",
-        description="Silver futures quoted in US dollars.",
+        description="Silver futures; Yahoo Finance ticker SI=F.",
     ),
     "NASDAQ100": ProviderInstrument(
         internal_symbol="NASDAQ100",
-        provider_symbol="^NDX",
-        instrument_type="index",
-        description="Nasdaq-100 index.",
+        provider_symbol="NQ=F",
+        instrument_type="futures",
+        description="E-mini Nasdaq-100 futures; Yahoo Finance ticker NQ=F.",
     ),
     "SP500": ProviderInstrument(
         internal_symbol="SP500",
-        provider_symbol="^GSPC",
-        instrument_type="index",
-        description="S&P 500 index.",
+        provider_symbol="ES=F",
+        instrument_type="futures",
+        description="E-mini S&P 500 futures; Yahoo Finance ticker ES=F.",
     ),
     "DJIA": ProviderInstrument(
         internal_symbol="DJIA",
-        provider_symbol="^DJI",
-        instrument_type="index",
-        description="Dow Jones Industrial Average index.",
+        provider_symbol="YM=F",
+        instrument_type="futures",
+        description="E-mini Dow futures; Yahoo Finance ticker YM=F.",
     ),
 }
 
 
 def get_provider_instrument(internal_symbol: str) -> ProviderInstrument:
-    """Return the verified mapping configured for an internal market ID."""
+    """Return the configured futures instrument for an internal market ID."""
     if not isinstance(internal_symbol, str):
         raise MarketDataError("Market symbol must be a string.")
 
@@ -66,5 +66,5 @@ def get_provider_instrument(internal_symbol: str) -> ProviderInstrument:
 
 
 def list_provider_instruments() -> tuple[ProviderInstrument, ...]:
-    """Return all configured provider instruments."""
+    """Return all configured futures instruments."""
     return tuple(_PROVIDER_INSTRUMENTS.values())

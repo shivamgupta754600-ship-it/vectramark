@@ -7,47 +7,47 @@ from vectramark.infrastructure.market_data.symbol_mapping import (
 )
 
 
-def test_gold_mapping_is_futures() -> None:
-    instrument = get_provider_instrument("XAUUSD")
-
-    assert instrument.provider_symbol == "GC=F"
-    assert instrument.instrument_type == "futures"
-
-
-def test_silver_mapping_is_futures() -> None:
-    instrument = get_provider_instrument("XAGUSD")
-
-    assert instrument.provider_symbol == "SI=F"
-    assert instrument.instrument_type == "futures"
-
-
 @pytest.mark.parametrize(
     ("symbol", "provider_symbol"),
     [
-        ("NASDAQ100", "^NDX"),
-        ("SP500", "^GSPC"),
-        ("DJIA", "^DJI"),
+        ("XAUUSD", "GC=F"),
+        ("XAGUSD", "SI=F"),
+        ("NASDAQ100", "NQ=F"),
+        ("SP500", "ES=F"),
+        ("DJIA", "YM=F"),
     ],
 )
-def test_index_mappings(
-    symbol: str,
-    provider_symbol: str,
-) -> None:
+def test_all_market_mappings_are_futures(symbol, provider_symbol):
     instrument = get_provider_instrument(symbol)
 
+    assert instrument.internal_symbol == symbol
     assert instrument.provider_symbol == provider_symbol
-    assert instrument.instrument_type == "index"
+    assert instrument.instrument_type == "futures"
+    assert "futures" in instrument.description.lower()
 
 
-def test_symbol_lookup_is_case_insensitive() -> None:
+def test_symbol_lookup_is_case_insensitive():
     assert get_provider_instrument("xauusd").internal_symbol == "XAUUSD"
 
 
 @pytest.mark.parametrize("symbol", ["", "UNKNOWN", "../XAUUSD", None])
-def test_unknown_symbol_is_rejected(symbol: str | None) -> None:
+def test_unknown_symbol_is_rejected(symbol):
     with pytest.raises(MarketDataError):
-        get_provider_instrument(symbol)  # type: ignore[arg-type]
+        get_provider_instrument(symbol)
 
 
-def test_all_five_instruments_are_configured() -> None:
-    assert len(list_provider_instruments()) == 5
+def test_all_five_instruments_are_configured():
+    instruments = list_provider_instruments()
+
+    assert len(instruments) == 5
+    assert all(item.instrument_type == "futures" for item in instruments)
+
+
+def test_cash_index_tickers_are_not_configured():
+    configured_tickers = {
+        instrument.provider_symbol for instrument in list_provider_instruments()
+    }
+
+    assert "^NDX" not in configured_tickers
+    assert "^GSPC" not in configured_tickers
+    assert "^DJI" not in configured_tickers
