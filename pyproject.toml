@@ -1,0 +1,47 @@
+[project]
+name = "vectramark"
+version = "0.1.0"
+description = "AI-powered market intelligence and predictive analytics."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi[standard]>=0.150.0",
+    "langchain",
+    "langchain-groq",
+    "langsmith",
+    "numpy",
+    "pandas",
+    "plotly",
+    "pydantic-settings",
+    "python-dotenv",
+    "scikit-learn",
+    "yfinance",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vectramark"]
