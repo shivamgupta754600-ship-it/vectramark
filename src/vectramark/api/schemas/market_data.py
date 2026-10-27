@@ -55,6 +55,17 @@ class MarketCandleResponse(BaseModel):
     volume: float | None = Field(default=None, ge=0)
 
 
+class MarketInstrumentMetadata(BaseModel):
+    """Identity of the market instrument used for a data request."""
+
+    internal_symbol: MarketSymbol
+    name: str
+    instrument_type: Literal["futures"]
+    provider_name: str
+    provider_symbol: str
+    description: str
+
+
 class HistoricalMarketDataResponse(BaseModel):
     """Standard API response for historical market data."""
 
@@ -65,3 +76,7 @@ class HistoricalMarketDataResponse(BaseModel):
     count: int = Field(ge=0)
 
     data: list[MarketCandleResponse]
+
+    # Optional for compatibility with older code constructing this schema.
+    # The historical-data route populates it on successful requests.
+    instrument: MarketInstrumentMetadata | None = None

@@ -10,6 +10,7 @@ from vectramark.api.dependencies import (
 from vectramark.api.schemas.market_data import (
     HistoricalMarketDataResponse,
     MarketCandleResponse,
+    MarketInstrumentMetadata,
     MarketInterval,
     MarketPeriod,
 )
@@ -19,6 +20,11 @@ from vectramark.application.market_data_quality_service import (
 )
 from vectramark.application.market_data_service import MarketDataService
 from vectramark.core.exceptions import DataValidationError, MarketDataError
+from vectramark.data.market_config import get_market
+from vectramark.infrastructure.market_data.symbol_mapping import (
+    DATA_PROVIDER_NAME,
+    get_provider_instrument,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +36,6 @@ router = APIRouter(
 
 def _normalize_symbol(symbol: str) -> str:
     """Normalize a market symbol or reject an empty value."""
-
     normalized = symbol.strip().upper()
 
     if not normalized:
@@ -42,12 +47,26 @@ def _normalize_symbol(symbol: str) -> str:
     return normalized
 
 
+def build_instrument_metadata(symbol: str) -> MarketInstrumentMetadata:
+    """Build API metadata from the configured market and provider mapping."""
+    market = get_market(symbol)
+    provider_instrument = get_provider_instrument(symbol)
+
+    return MarketInstrumentMetadata(
+        internal_symbol=market.symbol,
+        name=market.name,
+        instrument_type=provider_instrument.instrument_type,
+        provider_name=DATA_PROVIDER_NAME,
+        provider_symbol=provider_instrument.provider_symbol,
+        description=provider_instrument.description,
+    )
+
+
 def _raise_market_data_http_error(
     symbol: str,
     exc: Exception,
 ) -> None:
     """Log a provider/validation failure without exposing internals."""
-
     logger.warning(
         "Market data request failed for symbol %s: %s",
         symbol,
@@ -65,7 +84,8 @@ def _raise_market_data_http_error(
     response_model=HistoricalMarketDataResponse,
     summary="Get historical market data",
     description=(
-        "Fetch validated historical market data and save it to local storage."
+        "Fetch validated historical market data, save it locally, and identify "
+        "the configured instrument and provider ticker in the response."
     ),
 )
 def get_historical_market_data(
@@ -75,7 +95,6 @@ def get_historical_market_data(
     service: MarketDataService = Depends(get_market_data_service),
 ) -> HistoricalMarketDataResponse:
     """Fetch validated historical market data for a supported market."""
-
     normalized_symbol = _normalize_symbol(symbol)
 
     try:
@@ -111,12 +130,18 @@ def get_historical_market_data(
             )
         )
 
+    try:
+        instrument = build_instrument_metadata(normalized_symbol)
+    except (ValueError, MarketDataError) as exc:
+        _raise_market_data_http_error(normalized_symbol, exc)
+
     return HistoricalMarketDataResponse(
         symbol=normalized_symbol,
         period=period,
         interval=interval,
         count=len(candles),
         data=candles,
+        instrument=instrument,
     )
 
 
@@ -136,7 +161,6 @@ def get_market_data_quality(
     service: MarketDataQualityService = Depends(get_market_data_quality_service),
 ) -> MarketDataQualityResponse:
     """Retrieve validated data and return its quality assessment."""
-
     normalized_symbol = _normalize_symbol(symbol)
 
     try:
@@ -168,7 +192,6 @@ def get_market_data_quality(
 )
 def get_supported_market_symbols() -> list[str]:
     """Return the internal symbols supported by VectraMark."""
-
     return [
         "XAUUSD",
         "XAGUSD",

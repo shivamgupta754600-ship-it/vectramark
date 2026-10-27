@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Market:
-    """Metadata for a supported futures-market instrument."""
+    """Configuration describing a supported market."""
 
     symbol: str
     name: str
@@ -17,8 +17,9 @@ MARKETS: dict[str, Market] = {
         name="Gold Futures",
         category="precious_metal",
         description=(
-            "Gold futures market data via Yahoo Finance ticker GC=F. "
-            "This is futures data, not a spot gold quote."
+            "Gold futures quoted in US dollars. "
+            "Configured Yahoo Finance ticker: GC=F. "
+            "This instrument is not spot gold."
         ),
     ),
     "XAGUSD": Market(
@@ -26,53 +27,60 @@ MARKETS: dict[str, Market] = {
         name="Silver Futures",
         category="precious_metal",
         description=(
-            "Silver futures market data via Yahoo Finance ticker SI=F. "
-            "This is futures data, not a spot silver quote."
+            "Silver futures quoted in US dollars. "
+            "Configured Yahoo Finance ticker: SI=F. "
+            "This instrument is not spot silver."
         ),
     ),
     "NASDAQ100": Market(
         symbol="NASDAQ100",
-        name="Nasdaq-100 Futures",
+        name="Nasdaq-100 E-mini Futures",
         category="equity_index",
         description=(
-            "Nasdaq-100 futures market data via Yahoo Finance ticker NQ=F. "
-            "This is futures data, not the cash Nasdaq-100 index."
+            "E-mini Nasdaq-100 futures based on the Nasdaq-100 Index. "
+            "Configured Yahoo Finance ticker: NQ=F. "
+            "This is futures-market data, not the cash index."
         ),
     ),
     "SP500": Market(
         symbol="SP500",
-        name="S&P 500 Futures",
+        name="E-mini S&P 500 Futures",
         category="equity_index",
         description=(
-            "S&P 500 futures market data via Yahoo Finance ticker ES=F. "
-            "This is futures data, not the cash S&P 500 index."
+            "E-mini S&P 500 index futures. "
+            "Configured Yahoo Finance ticker: ES=F. "
+            "This is futures-market data, not the cash index."
         ),
     ),
     "DJIA": Market(
         symbol="DJIA",
-        name="Dow Futures",
+        name="E-mini Dow Futures",
         category="equity_index",
         description=(
-            "Dow futures market data via Yahoo Finance ticker YM=F. "
-            "This is futures data, not the cash Dow Jones index."
+            "Dow Jones index futures. "
+            "Configured Yahoo Finance ticker: YM=F. "
+            "This is futures-market data, not the cash index."
         ),
     ),
 }
 
 
 def get_market(symbol: str) -> Market:
-    """Retrieve a supported market by its internal identifier."""
-    key = symbol.strip().upper()
+    """Return configuration for a supported internal market symbol."""
+    if not isinstance(symbol, str):
+        raise ValueError("Market symbol must be a string.")
+
+    normalized_symbol = symbol.strip().upper()
+
+    if not normalized_symbol:
+        raise ValueError("Market symbol cannot be empty.")
 
     try:
-        return MARKETS[key]
+        return MARKETS[normalized_symbol]
     except KeyError as exc:
-        supported = ", ".join(MARKETS)
-        raise ValueError(
-            f"Unsupported market '{symbol}'. Supported markets: {supported}"
-        ) from exc
+        raise ValueError("Unsupported market symbol.") from exc
 
 
 def list_markets() -> list[Market]:
-    """Return all supported markets."""
+    """Return all configured markets."""
     return list(MARKETS.values())
